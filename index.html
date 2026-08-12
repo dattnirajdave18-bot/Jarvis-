@@ -1,65 +1,1333 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>JARVIS</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#050914;color:#eaf7ff;font-family:Arial,sans-serif;overflow:hidden}
-.app{height:100vh;display:flex;flex-direction:column;background:radial-gradient(circle at 50% 42%,#082a46 0,#06111f 35%,#02050b 75%)}
-.top{padding:16px 18px 8px;text-align:center;font-weight:800;font-size:28px;letter-spacing:5px;color:#26cfff;text-shadow:0 0 16px #009dff}
-.status{text-align:center;color:#6be5ff;font-size:14px;margin:2px 0 8px}
-.visual{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
-.ring{width:min(76vw,330px);height:min(76vw,330px);border-radius:50%;border:3px solid #00bfff;box-shadow:0 0 22px #008cff,inset 0 0 25px #007cff;display:flex;align-items:center;justify-content:center;position:relative}
-.ring:before,.ring:after{content:"";position:absolute;border-radius:50%;border:1px dashed #26cfff;animation:spin 8s linear infinite}
-.ring:before{inset:20px}.ring:after{inset:45px;animation-direction:reverse;animation-duration:5s}
-.mic{width:100px;height:100px;border-radius:50%;border:2px solid #42ddff;background:#06152a;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 28px #00aaff;cursor:pointer;z-index:2}
-.listening .ring{animation:pulse 1s infinite}.listening .mic{box-shadow:0 0 55px #00eaff}
-@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{transform:scale(1.04)}}
-.result{min-height:60px;padding:8px 20px;text-align:center;color:#b9f5ff;font-size:17px}
-.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;padding:10px 14px 18px}
-button{border:1px solid #0abfff;background:#071a2b;color:#dffbff;border-radius:12px;padding:12px;font-weight:700;box-shadow:0 0 10px #006b99;cursor:pointer}
-button:active{transform:scale(.97)}.small{font-size:12px;color:#78b8c9;margin-top:4px;text-align:center}
+*{box-sizing:border-box}
+
+html,body{
+    margin:0;
+    width:100%;
+    min-height:100%;
+    background:#020713;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    overflow-x:hidden;
+}
+
+.app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 35%,rgba(0,150,255,.18),transparent 30%),
+      linear-gradient(180deg,#020817,#030b1c 55%,#020510);
+}
+
+.top{
+    padding:22px 18px 5px;
+    text-align:center;
+    font-size:38px;
+    font-weight:800;
+    letter-spacing:8px;
+    color:#00bfff;
+    text-shadow:0 0 18px #008cff;
+}
+
+.status{
+    text-align:center;
+    color:#6be7ff;
+    font-size:15px;
+    font-weight:bold;
+    margin:8px 0;
+    letter-spacing:1px;
+}
+
+.visual{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:430px;
+}
+
+.ring{
+    width:min(76vw,330px);
+    height:min(76vw,330px);
+    max-width:330px;
+    max-height:330px;
+    border:3px solid #00d9ff;
+    border-radius:50%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:
+      0 0 15px #00aaff,
+      0 0 40px rgba(0,180,255,.65),
+      inset 0 0 35px rgba(0,150,255,.2);
+}
+
+.ring:before,
+.ring:after{
+    content:"";
+    position:absolute;
+    border:1px solid rgba(0,190,255,.7);
+    border-radius:50%;
+}
+
+.ring:before{inset:20px}
+.ring:after{inset:48px}
+
+.listening .ring{
+    animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+    0%,100%{box-shadow:0 0 15px #00aaff,0 0 40px rgba(0,180,255,.6)}
+    50%{box-shadow:0 0 35px #00ffff,0 0 90px rgba(0,180,255,.9)}
+}
+
+.mic{
+    width:105px;
+    height:105px;
+    border-radius:50%;
+    border:2px solid #8ff5ff;
+    background:#061c46;
+    color:#fff;
+    font-size:45px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:3;
+    box-shadow:0 0 25px #00aaff;
+    transition:.2s;
+}
+
+.mic:active{
+    transform:scale(.94);
+}
+
+.result{
+    width:min(92%,650px);
+    min-height:70px;
+    margin:25px auto 10px;
+    padding:14px 18px;
+    text-align:center;
+    color:#c8f7ff;
+    font-size:16px;
+    line-height:1.5;
+}
+
+.you{
+    color:#7eeeff;
+    font-weight:bold;
+}
+
+.jarvis{
+    color:#fff;
+    margin-top:7px;
+}
+
+.controls{
+    width:min(94%,700px);
+    margin:0 auto;
+    padding:12px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+button{
+    min-height:52px;
+    border:1px solid #00aaff;
+    border-radius:14px;
+    background:rgba(4,30,70,.85);
+    color:#fff;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 10px rgba(0,160,255,.18);
+}
+
+button:hover{
+    background:#063a72;
+}
+
+button:active{
+    transform:scale(.97);
+}
+
+.small{
+    font-size:12px;
+    opacity:.8;
+}
+
+.panel{
+    width:min(94%,700px);
+    margin:8px auto 25px;
+    padding:15px;
+    border:1px solid rgba(0,180,255,.35);
+    border-radius:18px;
+    background:rgba(3,18,42,.75);
+}
+
+.panel h3{
+    margin:0 0 10px;
+    color:#6be7ff;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    border:1px solid #087dba;
+    background:#031326;
+    color:#fff;
+    outline:none;
+}
+
+.commandRow{
+    display:flex;
+    gap:8px;
+}
+
+.commandRow input{
+    flex:1;
+}
+
+.memoryItem,
+.reminderItem{
+    padding:10px;
+    border-bottom:1px solid rgba(0,170,255,.18);
+    font-size:14px;
+}
+
+.footer{
+    text-align:center;
+    padding:15px;
+    font-size:11px;
+    opacity:.55;
+}
+
+.hidden{
+    display:none;
+}
+
+@media(max-width:500px){
+    .top{font-size:30px}
+    .ring{width:280px;height:280px}
+}
 </style>
 </head>
+
 <body>
+
 <div class="app" id="app">
+
 <div class="top">JARVIS</div>
-<div class="status" id="status">READY — TAP TO ACTIVATE</div>
-<div class="visual"><div class="ring"><div class="mic" id="mic">🎙️</div></div></div>
-<div class="result" id="result">Say a command after tapping the microphone.</div>
+
+<div class="status" id="status">
+READY — TAP TO ACTIVATE
+</div>
+
+<div class="visual">
+
+<div class="ring" id="ring">
+<button class="mic" id="mic" onclick="startListening()">🎙️</button>
+</div>
+
+<div class="result">
+<div class="you" id="heard">You said: —</div>
+<div class="jarvis" id="answer">Hello. I am Jarvis.</div>
+</div>
+
+</div>
+
 <div class="controls">
-<button onclick="openSite('https://www.youtube.com')">▶ YouTube</button>
-<button onclick="openSite('https://www.google.com')">🔎 Google</button>
-<button onclick="speak('Hello. I am JARVIS.')">👋 Hello</button>
+
+<button onclick="openYouTube()">▶️ YouTube</button>
+<button onclick="openGoogle()">🔎 Google</button>
+
+<button onclick="sayHello()">👋 Hello</button>
 <button onclick="tellTime()">🕐 Time</button>
+
+<button onclick="tellDate()">📅 Date</button>
+<button onclick="weather()">🌦️ Weather</button>
+
+<button onclick="music()">🎵 Music</button>
+<button onclick="news()">📰 News</button>
+
+<button onclick="showSystem()">💻 System</button>
+<button onclick="showMemory()">🧠 Memory</button>
+
+<button onclick="showReminders()">⏰ Reminders</button>
+<button onclick="showSettings()">⚙️ Settings</button>
+
 </div>
-<div class="small">Voice commands: “open YouTube”, “open Google”, “what time is it”, “hello”</div>
+
+<div class="panel hidden" id="commandPanel">
+
+<h3>⌨️ Command</h3>
+
+<div class="commandRow">
+<input id="commandInput" placeholder="Type a command...">
+<button onclick="runTypedCommand()">Run</button>
 </div>
+
+</div>
+
+<div class="panel hidden" id="memoryPanel">
+
+<h3>🧠 Jarvis Memory</h3>
+
+<div class="commandRow">
+<input id="memoryInput" placeholder="Remember this...">
+<button onclick="saveMemory()">Save</button>
+</div>
+
+<div id="memoryList"></div>
+
+</div>
+
+<div class="panel hidden" id="reminderPanel">
+
+<h3>⏰ Reminder</h3>
+
+<div class="commandRow">
+<input id="reminderText" placeholder="Reminder...">
+</div>
+
+<br>
+
+<div class="commandRow">
+<input id="reminderMinutes" type="number" min="1" placeholder="Minutes">
+<button onclick="setReminder()">Set</button>
+</div>
+
+<div id="reminderList"></div>
+
+</div>
+
+<div class="panel hidden" id="systemPanel">
+
+<h3>💻 System Information</h3>
+
+<div id="systemInfo">Loading...</div>
+
+</div>
+
+<div class="panel hidden" id="settingsPanel">
+
+<h3>⚙️ Settings</h3>
+
+<button onclick="toggleTheme()">🌌 Toggle Theme</button>
+<br><br>
+<button onclick="clearMemory()">🗑️ Clear Memory</button>
+<br><br>
+<button onclick="clearReminders()">🗑️ Clear Reminders</button>
+
+</div>
+
+<div class="footer">
+JARVIS • Voice Assistant Interface
+</div>
+
+</div>
+
 <script>
-const app=document.getElementById('app'),statusEl=document.getElementById('status'),resultEl=document.getElementById('result');
-function speak(t){if('speechSynthesis' in window){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t));}}
-function openSite(u){window.open(u,'_blank');}
-function tellTime(){const t=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});resultEl.textContent='Current time: '+t;speak('The time is '+t);}
-function handle(text){
- text=text.toLowerCase().trim();resultEl.textContent='You said: '+text;
- if(text.includes('youtube')){speak('Opening YouTube');openSite('https://www.youtube.com');}
- else if(text.includes('google')||text.includes('search')){speak('Opening Google');openSite('https://www.google.com');}
- else if(text.includes('time'))tellTime();
- else if(text.includes('hello')||text.includes('hi'))speak('Hello. I am JARVIS.');
- else if(text.includes('how are you'))speak('I am ready to help you.');
- else if(text.includes('stop'))speak('Okay. Standing by.');
- else speak('I heard you say '+text);
+
+/* =========================
+   GLOBALS
+========================= */
+
+const app=document.getElementById("app");
+const statusEl=document.getElementById("status");
+const heardEl=document.getElementById("heard");
+const answerEl=document.getElementById("answer");
+const ring=document.getElementById("ring");
+
+let recognition=null;
+let listening=false;
+
+
+/* =========================
+   SPEAK
+========================= */
+
+function speak(text){
+
+    answerEl.textContent=text;
+
+    if("speechSynthesis" in window){
+
+        speechSynthesis.cancel();
+
+        const speech=new SpeechSynthesisUtterance(text);
+
+        speech.rate=.95;
+        speech.pitch=1;
+        speech.volume=1;
+
+        speechSynthesis.speak(speech);
+    }
 }
-let rec=null;
-if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;
- rec.onstart=()=>{app.classList.add('listening');statusEl.textContent='LISTENING...';resultEl.textContent='Speak now...';};
- rec.onend=()=>{app.classList.remove('listening');statusEl.textContent='READY — TAP TO ACTIVATE';};
- rec.onerror=e=>{app.classList.remove('listening');statusEl.textContent='MIC ERROR — TAP AGAIN';resultEl.textContent=e.error;};
- rec.onresult=e=>handle(e.results[0][0].transcript);
+
+
+/* =========================
+   STATUS
+========================= */
+
+function setStatus(text){
+
+    statusEl.textContent=text;
+
 }
-document.getElementById('mic').onclick=()=>{if(rec){try{rec.start()}catch(e){}}else{statusEl.textContent='Voice recognition is not supported in this browser.';}};
+
+
+/* =========================
+   VOICE RECOGNITION
+========================= */
+
+function createRecognition(){
+
+    const SpeechRecognition=
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+
+        speak("Voice recognition is not supported in this browser.");
+        return null;
+    }
+
+    const r=new SpeechRecognition();
+
+    r.lang="en-IN";
+
+    r.continuous=false;
+    r.interimResults=false;
+
+    r.onstart=()=>{
+
+        listening=true;
+
+        ring.classList.add("listening");
+
+        setStatus("LISTENING...");
+
+    };
+
+    r.onresult=(event)=>{
+
+        const text=
+            event.results[0][0].transcript.trim();
+
+        heardEl.textContent="You said: "+text;
+
+        handleCommand(text);
+
+    };
+
+    r.onerror=(event)=>{
+
+        console.log(event.error);
+
+        listening=false;
+
+        ring.classList.remove("listening");
+
+        setStatus("READY — TAP TO ACTIVATE");
+
+        if(event.error==="not-allowed"){
+
+            speak("Microphone permission is required.");
+
+        }
+
+    };
+
+    r.onend=()=>{
+
+        listening=false;
+
+        ring.classList.remove("listening");
+
+        setStatus("READY — TAP TO ACTIVATE");
+
+    };
+
+    return r;
+}
+
+
+function startListening(){
+
+    if(listening){
+
+        recognition?.stop();
+
+        return;
+
+    }
+
+    if(!recognition){
+
+        recognition=createRecognition();
+
+    }
+
+    if(recognition){
+
+        try{
+
+            recognition.start();
+
+        }catch(e){
+
+            console.log(e);
+
+        }
+
+    }
+
+}
+
+
+/* =========================
+   COMMAND PROCESSOR
+========================= */
+
+function handleCommand(command){
+
+    const c=command.toLowerCase().trim();
+
+
+    if(c.includes("hello") ||
+       c.includes("hi jarvis")){
+
+        sayHello();
+        return;
+    }
+
+
+    if(c.includes("youtube")){
+
+        openYouTube();
+
+        speak("Opening YouTube.");
+
+        return;
+    }
+
+
+    if(c.includes("google") ||
+       c.includes("search")){
+
+        const query=
+            c.replace("google","")
+             .replace("search","")
+             .trim();
+
+        if(query){
+
+            openGoogleSearch(query);
+
+        }else{
+
+            openGoogle();
+
+        }
+
+        return;
+    }
+
+
+    if(c.includes("time")){
+
+        tellTime();
+
+        return;
+    }
+
+
+    if(c.includes("date") ||
+       c.includes("today")){
+
+        tellDate();
+
+        return;
+    }
+
+
+    if(c.includes("weather")){
+
+        weather();
+
+        return;
+    }
+
+
+    if(c.includes("music") ||
+       c.includes("song")){
+
+        music();
+
+        return;
+    }
+
+
+    if(c.includes("news")){
+
+        news();
+
+        return;
+    }
+
+
+    if(c.includes("calculator") ||
+       c.includes("calculate")){
+
+        calculator();
+
+        return;
+    }
+
+
+    if(c.includes("remember")){
+
+        const memory=
+            command
+            .replace(/remember/i,"")
+            .trim();
+
+        if(memory){
+
+            localStorage.setItem(
+                "jarvis_memory",
+                JSON.stringify([
+                    ...getMemory(),
+                    memory
+                ])
+            );
+
+            speak("I will remember that.");
+
+        }else{
+
+            showMemory();
+
+        }
+
+        return;
+    }
+
+
+    if(c.includes("reminder")){
+
+        showReminders();
+
+        speak("Opening your reminders.");
+
+        return;
+    }
+
+
+    if(c.includes("system")){
+
+        showSystem();
+
+        speak("Showing system information.");
+
+        return;
+    }
+
+
+    if(c.includes("sleep") ||
+       c.includes("go to sleep")){
+
+        speak("Going to sleep.");
+
+        setStatus("SLEEP MODE");
+
+        return;
+    }
+
+
+    speak(
+      "I understood your command, but that feature needs the Jarvis Python bridge."
+    );
+
+}
+
+
+/* =========================
+   BASIC ACTIONS
+========================= */
+
+function openYouTube(){
+
+    window.open(
+      "https://www.youtube.com",
+      "_blank"
+    );
+
+}
+
+
+function openGoogle(){
+
+    window.open(
+      "https://www.google.com",
+      "_blank"
+    );
+
+}
+
+
+function openGoogleSearch(query){
+
+    window.open(
+      "https://www.google.com/search?q="+
+      encodeURIComponent(query),
+      "_blank"
+    );
+
+}
+
+
+function sayHello(){
+
+    speak("Hello. I am Jarvis. How can I help you?");
+
+}
+
+
+function tellTime(){
+
+    const now=new Date();
+
+    const time=now.toLocaleTimeString(
+      "en-IN",
+      {
+        hour:"numeric",
+        minute:"2-digit"
+      }
+    );
+
+    speak("The time is "+time);
+
+}
+
+
+function tellDate(){
+
+    const now=new Date();
+
+    const date=now.toLocaleDateString(
+      "en-IN",
+      {
+        weekday:"long",
+        day:"numeric",
+        month:"long",
+        year:"numeric"
+      }
+    );
+
+    speak("Today is "+date);
+
+}
+
+
+function music(){
+
+    window.open(
+      "https://www.youtube.com/results?search_query=music",
+      "_blank"
+    );
+
+    speak("Opening music.");
+
+}
+
+
+function news(){
+
+    window.open(
+      "https://news.google.com",
+      "_blank"
+    );
+
+    speak("Opening the latest news.");
+
+}
+
+
+function calculator(){
+
+    window.open(
+      "https://www.google.com/search?q=calculator",
+      "_blank"
+    );
+
+    speak("Opening calculator.");
+
+}
+
+
+/* =========================
+   WEATHER
+========================= */
+
+async function weather(){
+
+    setStatus("GETTING WEATHER...");
+
+    try{
+
+        if(!navigator.geolocation){
+
+            speak("Location is not available in this browser.");
+
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async position=>{
+
+                const lat=position.coords.latitude;
+                const lon=position.coords.longitude;
+
+                const url=
+                "https://api.open-meteo.com/v1/forecast"+
+                "?latitude="+lat+
+                "&longitude="+lon+
+                "&current=temperature_2m,weather_code,wind_speed_10m";
+
+                const response=await fetch(url);
+
+                const data=await response.json();
+
+                const temp=data.current.temperature_2m;
+
+                const wind=data.current.wind_speed_10m;
+
+                speak(
+                  "The current temperature is "+
+                  temp+
+                  " degrees Celsius, with wind speed "+
+                  wind+
+                  " kilometers per hour."
+                );
+
+                setStatus("READY — TAP TO ACTIVATE");
+
+            },
+            ()=>{
+                speak("Please allow location access to get your weather.");
+                setStatus("READY — TAP TO ACTIVATE");
+            }
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        speak("I could not get the weather right now.");
+
+        setStatus("READY — TAP TO ACTIVATE");
+
+    }
+
+}
+
+
+/* =========================
+   MEMORY
+========================= */
+
+function getMemory(){
+
+    try{
+
+        return JSON.parse(
+          localStorage.getItem("jarvis_memory") || "[]"
+        );
+
+    }catch{
+
+        return [];
+
+    }
+
+}
+
+
+function saveMemory(){
+
+    const input=document.getElementById("memoryInput");
+
+    const text=input.value.trim();
+
+    if(!text){
+
+        speak("Please enter something to remember.");
+
+        return;
+    }
+
+    const memory=getMemory();
+
+    memory.push(text);
+
+    localStorage.setItem(
+      "jarvis_memory",
+      JSON.stringify(memory)
+    );
+
+    input.value="";
+
+    renderMemory();
+
+    speak("I have saved that in my memory.");
+
+}
+
+
+function renderMemory(){
+
+    const list=document.getElementById("memoryList");
+
+    const memory=getMemory();
+
+    if(memory.length===0){
+
+        list.innerHTML=
+          "<p class='small'>No memories saved.</p>";
+
+        return;
+    }
+
+    list.innerHTML=memory.map(
+      (item,index)=>
+      `<div class="memoryItem">
+        ${index+1}. ${escapeHtml(item)}
+      </div>`
+    ).join("");
+
+}
+
+
+function showMemory(){
+
+    hidePanels();
+
+    document
+      .getElementById("memoryPanel")
+      .classList.remove("hidden");
+
+    renderMemory();
+
+}
+
+
+/* =========================
+   REMINDERS
+========================= */
+
+function getReminders(){
+
+    try{
+
+        return JSON.parse(
+          localStorage.getItem("jarvis_reminders") || "[]"
+        );
+
+    }catch{
+
+        return [];
+
+    }
+
+}
+
+
+function setReminder(){
+
+    const text=
+      document.getElementById("reminderText")
+      .value.trim();
+
+    const minutes=parseInt(
+      document.getElementById("reminderMinutes").value
+    );
+
+    if(!text || !minutes){
+
+        speak("Please enter a reminder and time.");
+
+        return;
+    }
+
+    const reminder={
+        text:text,
+        time:Date.now()+minutes*60000
+    };
+
+    const reminders=getReminders();
+
+    reminders.push(reminder);
+
+    localStorage.setItem(
+      "jarvis_reminders",
+      JSON.stringify(reminders)
+    );
+
+    document.getElementById("reminderText").value="";
+
+    document.getElementById("reminderMinutes").value="";
+
+    renderReminders();
+
+    speak(
+      "Reminder set for "+
+      minutes+
+      " minutes from now."
+    );
+
+    setTimeout(
+      ()=>triggerReminder(reminder),
+      minutes*60000
+    );
+
+}
+
+
+function triggerReminder(reminder){
+
+    speak("Reminder: "+reminder.text);
+
+    if(
+      "Notification" in window &&
+      Notification.permission==="granted"
+    ){
+
+        new Notification(
+          "JARVIS Reminder",
+          {
+            body:reminder.text
+          }
+        );
+
+    }
+
+}
+
+
+function renderReminders(){
+
+    const list=
+      document.getElementById("reminderList");
+
+    const reminders=getReminders();
+
+    if(reminders.length===0){
+
+        list.innerHTML=
+          "<p class='small'>No reminders.</p>";
+
+        return;
+    }
+
+    list.innerHTML=reminders.map(
+      (r,i)=>
+      `<div class="reminderItem">
+        ⏰ ${escapeHtml(r.text)}
+        <div class="small">
+          ${new Date(r.time).toLocaleString()}
+        </div>
+      </div>`
+    ).join("");
+
+}
+
+
+function showReminders(){
+
+    hidePanels();
+
+    document
+      .getElementById("reminderPanel")
+      .classList.remove("hidden");
+
+    renderReminders();
+
+    if(
+      "Notification" in window &&
+      Notification.permission==="default"
+    ){
+
+        Notification.requestPermission();
+
+    }
+
+}
+
+
+/* =========================
+   SYSTEM INFO
+========================= */
+
+async function showSystem(){
+
+    hidePanels();
+
+    document
+      .getElementById("systemPanel")
+      .classList.remove("hidden");
+
+    const info=
+      document.getElementById("systemInfo");
+
+    let batteryText="Not available";
+
+    try{
+
+        if(navigator.getBattery){
+
+            const battery=
+              await navigator.getBattery();
+
+            batteryText=
+              Math.round(
+                battery.level*100
+              )+
+              "%"+
+              (
+                battery.charging
+                ?" • Charging"
+                :""
+              );
+
+        }
+
+    }catch(e){}
+
+    info.innerHTML=`
+
+      <div class="memoryItem">
+        🌐 Online:
+        ${navigator.onLine ? "Yes":"No"}
+      </div>
+
+      <div class="memoryItem">
+        🔋 Battery:
+        ${batteryText}
+      </div>
+
+      <div class="memoryItem">
+        📱 Screen:
+        ${screen.width} × ${screen.height}
+      </div>
+
+      <div class="memoryItem">
+        🖥️ Browser:
+        ${escapeHtml(navigator.userAgent)}
+      </div>
+
+      <div class="memoryItem">
+        🌍 Language:
+        ${escapeHtml(navigator.language)}
+      </div>
+
+    `;
+
+}
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+function showSettings(){
+
+    hidePanels();
+
+    document
+      .getElementById("settingsPanel")
+      .classList.remove("hidden");
+
+}
+
+
+function toggleTheme(){
+
+    document.body.classList.toggle("lightMode");
+
+}
+
+
+function clearMemory(){
+
+    if(confirm("Clear all Jarvis memory?")){
+
+        localStorage.removeItem("jarvis_memory");
+
+        renderMemory();
+
+        speak("Memory cleared.");
+
+    }
+
+}
+
+
+function clearReminders(){
+
+    if(confirm("Clear all reminders?")){
+
+        localStorage.removeItem("jarvis_reminders");
+
+        renderReminders();
+
+        speak("All reminders cleared.");
+
+    }
+
+}
+
+
+/* =========================
+   COMMAND PANEL
+========================= */
+
+function showCommandPanel(){
+
+    hidePanels();
+
+    document
+      .getElementById("commandPanel")
+      .classList.remove("hidden");
+
+}
+
+
+function runTypedCommand(){
+
+    const input=
+      document.getElementById("commandInput");
+
+    const command=input.value.trim();
+
+    if(!command)return;
+
+    heardEl.textContent=
+      "You said: "+command;
+
+    handleCommand(command);
+
+    input.value="";
+
+}
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function hidePanels(){
+
+    document
+      .querySelectorAll(".panel")
+      .forEach(
+        p=>p.classList.add("hidden")
+      );
+
+}
+
+
+function escapeHtml(text){
+
+    return String(text)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener(
+  "keydown",
+  event=>{
+
+    if(event.key==="Enter"){
+
+        const input=
+          document.activeElement;
+
+        if(input &&
+           input.id==="commandInput"){
+
+            runTypedCommand();
+
+        }
+
+    }
+
+});
+
+
+/* =========================
+   STARTUP
+========================= */
+
+window.addEventListener(
+  "load",
+  ()=>{
+
+    setStatus("READY — TAP TO ACTIVATE");
+
+    answerEl.textContent=
+      "Hello. I am Jarvis.";
+
+    /* Restore reminders after refresh */
+
+    const reminders=getReminders();
+
+    reminders.forEach(reminder=>{
+
+        const remaining=
+          reminder.time-Date.now();
+
+        if(remaining>0){
+
+            setTimeout(
+              ()=>triggerReminder(reminder),
+              remaining
+            );
+
+        }
+
+    });
+
+  }
+);
+
 </script>
+
 </body>
-</html>
+ </html>
