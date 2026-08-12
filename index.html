@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>JARVIS</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050914;color:#eaf7ff;font-family:Arial,sans-serif;overflow:hidden}
+.app{height:100vh;display:flex;flex-direction:column;background:radial-gradient(circle at 50% 42%,#082a46 0,#06111f 35%,#02050b 75%)}
+.top{padding:16px 18px 8px;text-align:center;font-weight:800;font-size:28px;letter-spacing:5px;color:#26cfff;text-shadow:0 0 16px #009dff}
+.status{text-align:center;color:#6be5ff;font-size:14px;margin:2px 0 8px}
+.visual{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.ring{width:min(76vw,330px);height:min(76vw,330px);border-radius:50%;border:3px solid #00bfff;box-shadow:0 0 22px #008cff,inset 0 0 25px #007cff;display:flex;align-items:center;justify-content:center;position:relative}
+.ring:before,.ring:after{content:"";position:absolute;border-radius:50%;border:1px dashed #26cfff;animation:spin 8s linear infinite}
+.ring:before{inset:20px}.ring:after{inset:45px;animation-direction:reverse;animation-duration:5s}
+.mic{width:100px;height:100px;border-radius:50%;border:2px solid #42ddff;background:#06152a;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 28px #00aaff;cursor:pointer;z-index:2}
+.listening .ring{animation:pulse 1s infinite}.listening .mic{box-shadow:0 0 55px #00eaff}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{transform:scale(1.04)}}
+.result{min-height:60px;padding:8px 20px;text-align:center;color:#b9f5ff;font-size:17px}
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;padding:10px 14px 18px}
+button{border:1px solid #0abfff;background:#071a2b;color:#dffbff;border-radius:12px;padding:12px;font-weight:700;box-shadow:0 0 10px #006b99;cursor:pointer}
+button:active{transform:scale(.97)}.small{font-size:12px;color:#78b8c9;margin-top:4px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<div class="top">JARVIS</div>
+<div class="status" id="status">READY — TAP TO ACTIVATE</div>
+<div class="visual"><div class="ring"><div class="mic" id="mic">🎙️</div></div></div>
+<div class="result" id="result">Say a command after tapping the microphone.</div>
+<div class="controls">
+<button onclick="openSite('https://www.youtube.com')">▶ YouTube</button>
+<button onclick="openSite('https://www.google.com')">🔎 Google</button>
+<button onclick="speak('Hello. I am JARVIS.')">👋 Hello</button>
+<button onclick="tellTime()">🕐 Time</button>
+</div>
+<div class="small">Voice commands: “open YouTube”, “open Google”, “what time is it”, “hello”</div>
+</div>
+<script>
+const app=document.getElementById('app'),statusEl=document.getElementById('status'),resultEl=document.getElementById('result');
+function speak(t){if('speechSynthesis' in window){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t));}}
+function openSite(u){window.open(u,'_blank');}
+function tellTime(){const t=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});resultEl.textContent='Current time: '+t;speak('The time is '+t);}
+function handle(text){
+ text=text.toLowerCase().trim();resultEl.textContent='You said: '+text;
+ if(text.includes('youtube')){speak('Opening YouTube');openSite('https://www.youtube.com');}
+ else if(text.includes('google')||text.includes('search')){speak('Opening Google');openSite('https://www.google.com');}
+ else if(text.includes('time'))tellTime();
+ else if(text.includes('hello')||text.includes('hi'))speak('Hello. I am JARVIS.');
+ else if(text.includes('how are you'))speak('I am ready to help you.');
+ else if(text.includes('stop'))speak('Okay. Standing by.');
+ else speak('I heard you say '+text);
+}
+let rec=null;
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;
+ rec.onstart=()=>{app.classList.add('listening');statusEl.textContent='LISTENING...';resultEl.textContent='Speak now...';};
+ rec.onend=()=>{app.classList.remove('listening');statusEl.textContent='READY — TAP TO ACTIVATE';};
+ rec.onerror=e=>{app.classList.remove('listening');statusEl.textContent='MIC ERROR — TAP AGAIN';resultEl.textContent=e.error;};
+ rec.onresult=e=>handle(e.results[0][0].transcript);
+}
+document.getElementById('mic').onclick=()=>{if(rec){try{rec.start()}catch(e){}}else{statusEl.textContent='Voice recognition is not supported in this browser.';}};
+</script>
+</body>
+</html>
