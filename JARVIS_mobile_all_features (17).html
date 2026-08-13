@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#020713">
+<title>JARVIS</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#020713;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{overflow-x:hidden}
+.app{min-height:100vh;background:radial-gradient(circle at 50% 35%,rgba(0,150,255,.18),transparent 30%),linear-gradient(180deg,#020817,#030b1c 55%,#020510)}
+.top{text-align:center;padding:20px 12px 4px;font-size:36px;font-weight:800;letter-spacing:8px;color:#00bfff;text-shadow:0 0 18px #008cff}
+.status{text-align:center;color:#6be7ff;font-size:14px;font-weight:bold;margin:8px;letter-spacing:1px}
+.visual{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:390px}
+.ring{width:min(72vw,310px);height:min(72vw,310px);border:3px solid #00d9ff;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px #00aaff,0 0 40px rgba(0,180,255,.65),inset 0 0 35px rgba(0,150,255,.2)}
+.ring:before,.ring:after{content:"";position:absolute;border:1px solid rgba(0,190,255,.7);border-radius:50%}
+.ring:before{inset:20px}.ring:after{inset:48px}
+.listening .ring{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 15px #00aaff,0 0 40px rgba(0,180,255,.6)}50%{box-shadow:0 0 35px #00ffff,0 0 90px rgba(0,180,255,.9)}}
+.mic{width:105px;height:105px;border-radius:50%;border:2px solid #8ff5ff;background:#061c46;color:#fff;font-size:45px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;box-shadow:0 0 25px #00aaff}
+.result{width:min(92%,680px);min-height:75px;margin:15px auto;padding:12px 18px;text-align:center;color:#c8f7ff;line-height:1.5}
+.you{color:#7eeeff;font-weight:bold}.jarvis{color:#fff;margin-top:7px}
+.controls{width:min(94%,720px);margin:auto;padding:10px;display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+button{min-height:50px;border:1px solid #00aaff;border-radius:14px;background:rgba(4,30,70,.85);color:#fff;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 10px rgba(0,160,255,.18)}
+button:active{transform:scale(.97)}
+.panel{width:min(94%,720px);margin:8px auto 18px;padding:15px;border:1px solid rgba(0,180,255,.35);border-radius:18px;background:rgba(3,18,42,.78)}
+.panel h3{margin:0 0 10px;color:#6be7ff}
+.hidden{display:none}
+.row{display:flex;gap:8px;margin:7px 0}.row input,.row select{flex:1}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #087dba;background:#031326;color:#fff;outline:none}
+.item{padding:10px;border-bottom:1px solid rgba(0,170,255,.18);font-size:14px}
+.small{font-size:12px;opacity:.75}
+.footer{text-align:center;padding:15px;font-size:11px;opacity:.55}
+.log{max-height:180px;overflow:auto}
+.log div{padding:7px;border-bottom:1px solid rgba(0,170,255,.12)}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top">JARVIS</div>
+<div class="status" id="status">READY — TAP TO ACTIVATE</div>
+
+<div class="visual">
+  <div class="ring" id="ring"><button class="mic" onclick="startListening()">🎙️</button></div>
+  <div class="result">
+    <div class="you" id="heard">You said: —</div>
+    <div class="jarvis" id="answer">Hello. I am Jarvis.</div>
+  </div>
+</div>
+
+<div class="controls">
+<button onclick="startListening()">🎙️ Voice</button>
+<button onclick="toggleCommandPanel()">⌨️ Type</button>
+<button onclick="openGoogle()">🔎 Google</button>
+<button onclick="openYouTube()">▶️ YouTube</button>
+<button onclick="tellTime()">🕐 Time</button>
+<button onclick="tellDate()">📅 Date</button>
+<button onclick="weather()">🌦️ Weather</button>
+<button onclick="askLocationWeather()">📍 Weather Here</button>
+<button onclick="music()">🎵 Music</button>
+<button onclick="news()">📰 News</button>
+<button onclick="calculator()">🧮 Calculator</button>
+<button onclick="shareJarvis()">📤 Share</button>
+<button onclick="showMemory()">🧠 Memory</button>
+<button onclick="showReminders()">⏰ Reminders</button>
+<button onclick="showSystem()">💻 Device Info</button>
+<button onclick="showSettings()">⚙️ Settings</button>
+</div>
+
+<div class="panel hidden" id="commandPanel">
+<h3>⌨️ Command</h3>
+<div class="row"><input id="commandInput" placeholder="Try: play Udi Udi song"></div>
+<button onclick="runTypedCommand()">Run Command</button>
+<p class="small">Examples: play Udi Udi, search Python, what time is it, remember that I like music, calculate 25*4.</p>
+</div>
+
+<div class="panel hidden" id="memoryPanel">
+<h3>🧠 Jarvis Memory</h3>
+<div class="row"><input id="memoryInput" placeholder="Remember this..."><button onclick="saveMemory()">Save</button></div>
+<div id="memoryList"></div>
+</div>
+
+<div class="panel hidden" id="reminderPanel">
+<h3>⏰ Reminders</h3>
+<div class="row"><input id="reminderText" placeholder="Reminder..."></div>
+<div class="row"><input id="reminderMinutes" type="number" min="1" placeholder="Minutes"><button onclick="setReminder()">Set</button></div>
+<div id="reminderList"></div>
+</div>
+
+<div class="panel hidden" id="systemPanel">
+<h3>💻 Device / Browser Info</h3><div id="systemInfo"></div>
+</div>
+
+<div class="panel hidden" id="settingsPanel">
+<h3>⚙️ Settings</h3>
+<div class="row"><select id="language"><option value="en-IN">English (India)</option><option value="hi-IN">Hindi</option><option value="gu-IN">Gujarati</option><option value="en-US">English (US)</option></select></div>
+<div class="row"><button onclick="requestNotifications()">🔔 Notifications</button><button onclick="fullscreen()">⛶ Fullscreen</button></div>
+<div class="row"><button onclick="clearMemory()">🗑️ Clear Memory</button><button onclick="clearReminders()">🗑️ Clear Reminders</button></div>
+</div>
+
+<div class="panel">
+<h3>📜 Command History</h3>
+<div class="log" id="historyLog"></div>
+</div>
+<div class="footer">JARVIS • Browser Assistant • Phone & Laptop Web Features</div>
+</div>
+
+<script>
+let recognition=null, listening=false, sleeping=false;
+const $=id=>document.getElementById(id);
+const setStatus=t=>$("status").textContent=t;
+
+function speak(text){
+  $("answer").textContent=text;
+  if("speechSynthesis" in window){
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text));
+    u.lang=$("language")?.value || "en-IN"; u.rate=.95; u.pitch=1; u.volume=1;
+    speechSynthesis.speak(u);
+  }
+}
+function logCommand(text,reply){
+  const arr=JSON.parse(localStorage.getItem("jarvis_history")||"[]");
+  arr.push({time:new Date().toLocaleTimeString(),text,reply});
+  while(arr.length>30)arr.shift();
+  localStorage.setItem("jarvis_history",JSON.stringify(arr));
+  renderHistory();
+}
+function renderHistory(){
+  const arr=JSON.parse(localStorage.getItem("jarvis_history")||"[]");
+  $("historyLog").innerHTML=arr.slice().reverse().map(x=>`<div><b>${escapeHtml(x.time)}</b> — ${escapeHtml(x.text)}<br><span class="small">${escapeHtml(x.reply)}</span></div>`).join("")||'<div class="small">No commands yet.</div>';
+}
+function createRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){speak("Voice recognition is not supported in this browser.");return null}
+  const r=new SR(); r.lang=$("language").value; r.continuous=false; r.interimResults=false;
+  r.onstart=()=>{listening=true;$("ring").classList.add("listening");setStatus("LISTENING...")};
+  r.onresult=e=>{const text=e.results[0][0].transcript.trim();$("heard").textContent="You said: "+text;handleCommand(text)};
+  r.onerror=e=>{console.log(e.error);listening=false;$("ring").classList.remove("listening");setStatus("READY — TAP TO ACTIVATE");if(e.error==="not-allowed")speak("Please allow microphone access.")};
+  r.onend=()=>{listening=false;$("ring").classList.remove("listening");if(!sleeping)setStatus("READY — TAP TO ACTIVATE")};
+  return r;
+}
+function startListening(){
+  if(sleeping){speak("I am sleeping. Say wake Jarvis or press the voice button.");sleeping=false;return}
+  if(listening){recognition?.stop();return}
+  if(!recognition)recognition=createRecognition();
+  try{recognition.start()}catch(e){}
+}
+
+function handleCommand(command){
+  const raw=command.trim(), c=raw.toLowerCase();
+  let reply=null;
+
+  if(c==="sleep"||c.includes("go to sleep")){sleeping=true;setStatus("SLEEP MODE");reply="Going to sleep.";finish(raw,reply);return}
+  if(c.includes("wake jarvis")||c.includes("wake up")){sleeping=false;setStatus("READY — TAP TO ACTIVATE");reply="I am awake.";finish(raw,reply);return}
+  if(c.includes("hello")||c==="hi"||c.includes("hi jarvis")){reply="Hello. I am Jarvis. How can I help you?";finish(raw,reply);return}
+
+  if(c.startsWith("play ")){
+    let song=raw.replace(/^play\s+/i,"").replace(/\s+song$/i,"").trim();
+    if(song){playSong(song);reply="Opening "+song+" on YouTube.";finish(raw,reply);return}
+  }
+  if(c.includes("youtube")){openYouTube();reply="Opening YouTube.";finish(raw,reply);return}
+
+  if(c.startsWith("search ")||c.startsWith("google ")){
+    const q=raw.replace(/^(search|google)\s+/i,"").trim();
+    if(q){openGoogleSearch(q);reply="Searching for "+q+".";finish(raw,reply);return}
+    openGoogle();reply="Opening Google.";finish(raw,reply);return
+  }
+  if(c.includes("time")){const d=new Date();reply="The time is "+d.toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"});finish(raw,reply);return}
+  if(c.includes("date")||c.includes("today")){const d=new Date();reply="Today is "+d.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});finish(raw,reply);return}
+  if(c.includes("weather")){weather();return}
+  if(c.includes("news")){news();reply="Opening the news.";finish(raw,reply);return}
+  if(c.includes("music")||c.includes("song")){music();reply="Opening music.";finish(raw,reply);return}
+  if(c.includes("calculator")||c.includes("calculate")){calculator();reply="Opening calculator.";finish(raw,reply);return}
+  if(c.includes("remember that")){
+    const fact=raw.split(/remember that/i)[1].trim();
+    if(fact){addMemory(fact);reply="I will remember that "+fact}else reply="What would you like me to remember?";
+    finish(raw,reply);return
+  }
+  if(c.includes("what do you remember")||c.includes("recall memory")){const m=getMemory();reply=m.length?"I remember: "+m.join(". "):"I do not have any saved memories yet.";finish(raw,reply);return}
+  if(c.includes("clear memory")){clearMemory();reply="Memory cleared.";finish(raw,reply);return}
+  if(c.includes("reminder")){showReminders();reply="Opening your reminders.";finish(raw,reply);return}
+  if(c.includes("device")||c.includes("system")||c.includes("battery")){showSystem();reply="Showing device information.";finish(raw,reply);return}
+  if(c.includes("clipboard")){clipboardAction(c,raw);return}
+  if(c.includes("fullscreen")){fullscreen();reply="Entering fullscreen.";finish(raw,reply);return}
+
+  if(/^calculate\s+/i.test(raw)){
+    const expr=raw.replace(/^calculate\s+/i,"").trim();
+    try{const safe=expr.replace(/[^0-9+\-*/().% ]/g,"");const val=Function('"use strict";return ('+safe+')')();reply="The answer is "+val}catch(e){reply="I could not calculate that."}
+    finish(raw,reply);return
+  }
+
+  reply="I can handle browser features here. Laptop-only controls such as opening Windows apps or shutdown require the Python bridge.";
+  finish(raw,reply);
+}
+function finish(command,reply){speak(reply);logCommand(command,reply)}
+
+function openYouTube(){window.open("https://www.youtube.com","_blank")}
+function openGoogle(){window.open("https://www.google.com","_blank")}
+function openGoogleSearch(q){window.open("https://www.google.com/search?q="+encodeURIComponent(q),"_blank")}
+function playSong(song){window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(song),"_blank");speak("Opening "+song+" on YouTube.")}
+function music(){window.open("https://www.youtube.com/results?search_query=music","_blank");speak("Opening music on YouTube.")}
+function news(){window.open("https://news.google.com","_blank")}
+function calculator(){window.open("https://www.google.com/search?q=calculator","_blank")}
+function tellTime(){handleCommand("what time is it")}
+function tellDate(){handleCommand("what is today's date")}
+
+async function weather(){
+  if(!navigator.geolocation){speak("Location is not available.");return}
+  setStatus("GETTING WEATHER...");
+  navigator.geolocation.getCurrentPosition(async p=>{
+    try{
+      const u=`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current=temperature_2m,weather_code,wind_speed_10m`;
+      const d=await fetch(u).then(r=>r.json());
+      const t=d.current.temperature_2m,w=d.current.wind_speed_10m;
+      const reply=`The current temperature is ${t} degrees Celsius and wind speed is ${w} kilometers per hour.`;
+      finish("weather",reply);
+    }catch(e){speak("I could not get the weather right now.")}
+    setStatus("READY — TAP TO ACTIVATE");
+  },()=>{speak("Please allow location access.");setStatus("READY — TAP TO ACTIVATE")});
+}
+function askLocationWeather(){weather()}
+
+function getMemory(){return JSON.parse(localStorage.getItem("jarvis_memory")||"[]")}
+function addMemory(text){const m=getMemory();if(!m.includes(text))m.push(text);localStorage.setItem("jarvis_memory",JSON.stringify(m));renderMemory()}
+function saveMemory(){const v=$("memoryInput").value.trim();if(!v){speak("Please enter something.");return}addMemory(v);$("memoryInput").value="";speak("I have saved that in my memory.")}
+function renderMemory(){const m=getMemory();$("memoryList").innerHTML=m.map((x,i)=>`<div class="item">${i+1}. ${escapeHtml(x)}</div>`).join("")||'<div class="small">No memories saved.</div>'}
+function showMemory(){hidePanels();$("memoryPanel").classList.remove("hidden");renderMemory()}
+
+function getReminders(){return JSON.parse(localStorage.getItem("jarvis_reminders")||"[]")}
+function setReminder(){
+  const text=$("reminderText").value.trim(), min=parseInt($("reminderMinutes").value);
+  if(!text||!min){speak("Enter the reminder and minutes.");return}
+  const r={text,time:Date.now()+min*60000}, a=getReminders();a.push(r);localStorage.setItem("jarvis_reminders",JSON.stringify(a));
+  $("reminderText").value="";$("reminderMinutes").value="";renderReminders();speak("Reminder set for "+min+" minutes from now.");scheduleReminder(r)
+}
+function scheduleReminder(r){const left=r.time-Date.now();if(left<=0){triggerReminder(r);return}setTimeout(()=>triggerReminder(r),left)}
+function triggerReminder(r){speak("Reminder: "+r.text);if("Notification"in window&&Notification.permission==="granted")new Notification("JARVIS Reminder",{body:r.text})}
+function renderReminders(){const a=getReminders();$("reminderList").innerHTML=a.map(r=>`<div class="item">⏰ ${escapeHtml(r.text)}<div class="small">${new Date(r.time).toLocaleString()}</div></div>`).join("")||'<div class="small">No reminders.</div>'}
+function showReminders(){hidePanels();$("reminderPanel").classList.remove("hidden");renderReminders();requestNotifications()}
+function requestNotifications(){if("Notification"in window&&Notification.permission==="default")Notification.requestPermission()}
+
+async function showSystem(){
+  hidePanels();$("systemPanel").classList.remove("hidden");
+  let battery="Unavailable";
+  try{if(navigator.getBattery){const b=await navigator.getBattery();battery=Math.round(b.level*100)+"%"+(b.charging?" • Charging":"")}}catch(e){}
+  $("systemInfo").innerHTML=`
+  <div class="item">🌐 Online: ${navigator.onLine?"Yes":"No"}</div>
+  <div class="item">🔋 Battery: ${battery}</div>
+  <div class="item">📱 Screen: ${screen.width} × ${screen.height}</div>
+  <div class="item">🌍 Language: ${escapeHtml(navigator.language)}</div>
+  <div class="item">🧭 Platform: ${escapeHtml(navigator.platform||"Unknown")}</div>
+  <div class="item">🖥️ Browser: ${escapeHtml(navigator.userAgent)}</div>`;
+}
+async function clipboardAction(c,raw){
+  if(!navigator.clipboard){finish(raw,"Clipboard access is not supported here.");return}
+  try{
+    if(c.includes("read clipboard")){const t=await navigator.clipboard.readText();finish(raw,t?"Your clipboard says: "+t:"Your clipboard is empty.")}
+    else if(c.includes("clear clipboard")){await navigator.clipboard.writeText("");finish(raw,"Clipboard cleared.")}
+    else {const t=raw.replace(/copy( to clipboard| text)/i,"").trim();await navigator.clipboard.writeText(t);finish(raw,"Copied to clipboard.")}
+  }catch(e){finish(raw,"Clipboard permission was not granted.")}
+}
+function fullscreen(){if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function shareJarvis(){
+  if(navigator.share)navigator.share({title:"JARVIS",text:"My JARVIS assistant",url:location.href}).catch(()=>{});
+  else{navigator.clipboard?.writeText(location.href);speak("The link was copied.")}
+}
+function toggleCommandPanel(){hidePanels();$("commandPanel").classList.remove("hidden");$("commandInput").focus()}
+function runTypedCommand(){const v=$("commandInput").value.trim();if(v){$("heard").textContent="You said: "+v;handleCommand(v);$("commandInput").value=""}}
+function showSettings(){hidePanels();$("settingsPanel").classList.remove("hidden")}
+function hidePanels(){document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"))}
+function clearMemory(){localStorage.removeItem("jarvis_memory");renderMemory();speak("Memory cleared.")}
+function clearReminders(){localStorage.removeItem("jarvis_reminders");renderReminders();speak("Reminders cleared.")}
+function escapeHtml(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+
+window.addEventListener("online",()=>setStatus("ONLINE — READY"))
+window.addEventListener("offline",()=>setStatus("OFFLINE"))
+window.addEventListener("load",()=>{
+  renderHistory();renderMemory();renderReminders();
+  getReminders().forEach(r=>scheduleReminder(r));
+  setStatus("READY — TAP TO ACTIVATE");
+});
+</script>
+</body>
+</html>
