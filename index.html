@@ -173,12 +173,41 @@ function handleCommand(command){
   if(c.includes("news")){news();reply="Opening the news.";finish(raw,reply);return}
   if(c.includes("music")||c.includes("song")){music();reply="Opening music.";finish(raw,reply);return}
   if(c.includes("calculator")||c.includes("calculate")){calculator();reply="Opening calculator.";finish(raw,reply);return}
+  /* NAME + MEMORY */
+  if(c.includes("my name is")){
+    const name=raw.split(/my name is/i)[1].trim();
+    if(name){
+      addMemory("My name is "+name);
+      reply="Nice to remember you, "+name+".";
+    }else{
+      reply="Tell me your name.";
+    }
+    finish(raw,reply);return
+  }
+
+  if(c.includes("what is my name")||c.includes("what's my name")||c.includes("who am i")){
+    const m=getMemory();
+    const nameMemory=m.find(x=>/^my name is /i.test(x));
+    if(nameMemory){
+      const name=nameMemory.replace(/^my name is /i,"").trim();
+      reply="Your name is "+name+".";
+    }else{
+      reply="You have not told me your name yet. Say, my name is Datt.";
+    }
+    finish(raw,reply);return
+  }
+
   if(c.includes("remember that")){
     const fact=raw.split(/remember that/i)[1].trim();
     if(fact){addMemory(fact);reply="I will remember that "+fact}else reply="What would you like me to remember?";
     finish(raw,reply);return
   }
-  if(c.includes("what do you remember")||c.includes("recall memory")){const m=getMemory();reply=m.length?"I remember: "+m.join(". "):"I do not have any saved memories yet.";finish(raw,reply);return}
+
+  if(c.includes("what do you remember")||c.includes("recall memory")){
+    const m=getMemory();
+    reply=m.length?"I remember: "+m.join(". "):"I do not have any saved memories yet.";
+    finish(raw,reply);return
+  }
   if(c.includes("clear memory")){clearMemory();reply="Memory cleared.";finish(raw,reply);return}
   if(c.includes("reminder")){showReminders();reply="Opening your reminders.";finish(raw,reply);return}
   if(c.includes("device")||c.includes("system")||c.includes("battery")){showSystem();reply="Showing device information.";finish(raw,reply);return}
@@ -283,4 +312,4 @@ window.addEventListener("load",()=>{
 });
 </script>
 </body>
-    </html>
+  </html>
